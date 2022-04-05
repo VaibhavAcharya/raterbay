@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -47,10 +46,6 @@ export function AuthContextProvider({ children }) {
         console.log("Data observer attached.");
 
         const dataDocRef = doc(firestore, "users", user.uid);
-        const collectionDocRef = doc(
-          firestore,
-          `users/${user.uid}/ratings/count`
-        );
 
         unsubscribe = onSnapshot(
           dataDocRef,
@@ -71,11 +66,6 @@ export function AuthContextProvider({ children }) {
                   displayName: user.displayName,
                   photoURL: user.photoURL,
                 });
-                // TODO: Hai kya ye?
-                setDoc(collectionDocRef, {
-                  count: 0,
-                  totalRating: 0,
-                });
               }
             } else {
               setDoc(dataDocRef, {
@@ -84,11 +74,11 @@ export function AuthContextProvider({ children }) {
                 resume: {
                   url: null,
                   updatedAt: null,
+                  rating: {
+                    total: 0,
+                    times: 0,
+                  },
                 },
-              });
-              setDoc(collectionDocRef, {
-                count: 0,
-                totalRating: 0,
               });
             }
           },
@@ -111,10 +101,7 @@ export function AuthContextProvider({ children }) {
   useEffect(
     function () {
       setIsFetching(
-        
-          (user === initialContextValues.user ||
-            data === initialContextValues.data)
-        
+        user === initialContextValues.user || data === initialContextValues.data
       );
     },
     [user, data]

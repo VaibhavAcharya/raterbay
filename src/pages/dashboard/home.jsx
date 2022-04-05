@@ -8,6 +8,8 @@ import {
   limit,
   getDocs,
   startAfter,
+  where,
+  Timestamp,
 } from "firebase/firestore";
 
 import { firestore } from "../../db";
@@ -22,6 +24,13 @@ const usersCollectionRef = collection(firestore, "users");
 const FETCH_USERS_FIRST_COUNT = 3;
 const FETCH_USERS_MORE_COUNT = 2;
 
+function getStartOfToday() {
+  const now = new Date();
+  now.setHours(5, 0, 0, 0); // +5 hours for Eastern Time
+  const timestamp = Timestamp.fromDate(now);
+  return timestamp; // ex. 1631246400
+}
+
 export default function Home() {
   const { data } = useAuth();
 
@@ -32,16 +41,24 @@ export default function Home() {
 
   useEffect(function () {
     console.log("Users fetch started. [first]");
+    const latestQuery = query(
+      usersCollectionRef,
+      orderBy("resume.updatedAt", "desc"),
+      where("resume.updatedAt", ">", getStartOfToday()),
+      limit(FETCH_USERS_FIRST_COUNT)
+    );
 
-    getDocs(
-      query(
-        usersCollectionRef,
-        orderBy("resume.updatedAt", "desc"),
-        limit(FETCH_USERS_FIRST_COUNT)
-      )
-    )
+    const topQuery = query(
+      usersCollectionRef,
+      orderBy("resume.updatedAt", "desc"),
+      where("resume.updatedAt", ">", getStartOfToday()),
+      orderBy("resume.rating.total", "desc"),
+      limit(FETCH_USERS_FIRST_COUNT)
+    );
+
+    getDocs(topQuery)
       .then((usersSnap) => {
-        console.log("Users fetched successfully. [first]");
+        console.log("Users fetched successfully. [first]", usersSnap.size);
 
         setLastUserDocFetched(usersSnap.docs[usersSnap.size - 1]);
         setUsers(
@@ -59,7 +76,7 @@ export default function Home() {
   }, []);
 
   const loadMoreUsers = useCallback(function () {
-    console.log("Users fetch started. [more]")
+    console.log("Users fetch started. [more]");
 
     getDocs(
       query(
@@ -68,36 +85,37 @@ export default function Home() {
         startAfter(lastUserDocFetched),
         limit(FETCH_USERS_MORE_COUNT)
       )
-    ).then(function (moreUsersSnap) {
-      console.log("Users fetched successfully. [more]");
+    )
+      .then(function (moreUsersSnap) {
+        console.log("Users fetched successfully. [more]");
 
-      const moreUsersSnapSize = moreUsersSnap.size;
+        const moreUsersSnapSize = moreUsersSnap.size;
 
-      if (moreUsersSnapSize < 1) {
-        console.log("No more users to fetch.");
+        if (moreUsersSnapSize < 1) {
+          console.log("No more users to fetch.");
 
-        setHasMoreUserDocs(false);
-      } else {
-        setLastUserDocFetched(moreUsersSnap.docs[moreUsersSnapSize]);
+          setHasMoreUserDocs(false);
+        } else {
+          setLastUserDocFetched(moreUsersSnap.docs[moreUsersSnapSize]);
 
-        const newUsers = moreUsersSnap.docs.map(function (userDoc) {
-          return {
-            id: userDoc.id,
-            ...userDoc.data(),
-          };
-        });
+          const newUsers = moreUsersSnap.docs.map(function (userDoc) {
+            return {
+              id: userDoc.id,
+              ...userDoc.data(),
+            };
+          });
 
-        setUsers(function (oldUsers) {
-          return [
-            ...oldUsers,
-            ...newUsers,
-          ];
-        });
-      }
-    }).catch(function (error) {
-      console.error("Users fetch failed! [more]", error)
-    });
-  }, [])
+          setUsers(function (oldUsers) {
+            return [...oldUsers, ...newUsers];
+          });
+        }
+      })
+      .catch(function (error) {
+        console.error("Users fetch failed! [more]", error);
+      });
+  }, []);
+
+  console.log(users);
 
   return (
     <Fragment>
@@ -106,7 +124,9 @@ export default function Home() {
         next={loadMoreUsers}
         hasMore={hasMoreUserDocs}
         loader={<p>loadinggggggg.........</p>}
-        endMessage={<div className="border-b border-dashed border-black pt-8" />}
+        endMessage={
+          <div className="border-b border-dashed border-black pt-8" />
+        }
       >
         <main>
           {users.map((user) => {

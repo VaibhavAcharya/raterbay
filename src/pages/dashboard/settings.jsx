@@ -44,6 +44,10 @@ export default function Settings() {
               resume: {
                 url: newResumeURL,
                 updatedAt: uploadRes.metadata.updated,
+                rating: {
+                  total: 0,
+                  times: 0,
+                },
               },
             })
               .then(function () {
