@@ -5,7 +5,6 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        serif: [`"Playfair Display"`, ...defaultTheme.fontFamily.serif],
         sans: [`"Montserrat"`, ...defaultTheme.fontFamily.sans],
       },
       animation: {

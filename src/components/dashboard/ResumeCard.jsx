@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
+
 import {
-  collection,
   doc,
   getDoc,
-  query,
   setDoc,
   updateDoc,
-  where,
 } from "firebase/firestore";
-import ResumeViewer from "../common/ResumeViewer";
+
 import { firestore } from "../../db";
 import { useAuth } from "../../db/helpers/auth";
 
-export default function ResumeCard({ resume }) {
+import ResumeViewer from "../common/ResumeViewer";
+
+export default function ResumeCard({ user: resume }) {
   const [rating, setRating] = useState(2);
   const [totalRating, setTotalRating] = useState(2);
   const [alreadyRating, setAlreadyRating] = useState(false);
@@ -54,7 +54,7 @@ export default function ResumeCard({ resume }) {
   };
 
   return (
-    <div className="mb-6 flex flex-col items-stretch justify-start gap-4 rounded-xl bg-black/5 p-4 backdrop-blur md:flex-row">
+    <div className="flex flex-col items-stretch justify-start gap-4 rounded-xl bg-black/5 p-4 backdrop-blur">
       <ResumeViewer url={resume.resume.url} />
       <div>
         <div className="flex flex-row items-center justify-start gap-4">
@@ -74,37 +74,15 @@ export default function ResumeCard({ resume }) {
           </div>
           {alreadyRating && <p>already rated {alreadyRating}</p>}
         </div>
-        <div className="mt-2 flex flex-row items-center justify-center gap-4 rounded-2xl bg-black/5 px-4 py-2 text-center font-bold backdrop-blur">
-          <button
-            onClick={() => addRating(1)}
-            className="aspect-square h-8 w-8 rounded-full bg-red-200 text-lg font-bold leading-none backdrop-blur"
+
+        <div className="flex flex-row items-center justify-center gap-4 rounded-2xl bg-gradient-to-r from-red-200/60 via-yellow-200/60 to-green-200/60 px-4 py-2 text-center font-bold backdrop-blur">
+          {[1, 2,3,4,5].map(function (ratingValue) { return (<button
+          key={ratingValue}
+            onClick={() => addRating(ratingValue)}
+            className="aspect-square h-8 w-8 rounded-full text-lg font-bold leading-none backdrop-blur hover:bg-white/60"
           >
-            1
-          </button>
-          <button
-            onClick={() => addRating(2)}
-            className="aspect-square h-8 w-8 rounded-full bg-orange-200 text-lg font-bold leading-none backdrop-blur"
-          >
-            2
-          </button>
-          <button
-            onClick={() => addRating(3)}
-            className="aspect-square h-8 w-8 rounded-full bg-yellow-200 text-lg font-bold leading-none backdrop-blur"
-          >
-            3
-          </button>
-          <button
-            onClick={() => addRating(4)}
-            className="aspect-square h-8 w-8 rounded-full bg-blue-200 text-lg font-bold leading-none backdrop-blur"
-          >
-            4
-          </button>
-          <button
-            onClick={() => addRating(5)}
-            className="aspect-square h-8 w-8 rounded-full bg-green-200 text-lg font-bold leading-none backdrop-blur"
-          >
-            5
-          </button>
+            {ratingValue}
+          </button>)})}
         </div>
       </div>
     </div>

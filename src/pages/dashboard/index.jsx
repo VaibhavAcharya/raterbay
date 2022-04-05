@@ -22,7 +22,7 @@ export default function Dashboard() {
 
   if (!isFetching && user && data) {
     return (
-      <div className="mx-auto flex w-[min(1280px,_100%)] flex-col items-stretch justify-start gap-8 p-8">
+      <div className="mx-auto flex w-[min(720px,_100%)] flex-col items-stretch justify-start gap-8 p-8">
         <Navbar />
         <Outlet />
         <Footer />

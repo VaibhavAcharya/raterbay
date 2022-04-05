@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
+
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -70,6 +71,7 @@ export function AuthContextProvider({ children }) {
                   displayName: user.displayName,
                   photoURL: user.photoURL,
                 });
+                // TODO: Hai kya ye?
                 setDoc(collectionDocRef, {
                   count: 0,
                   totalRating: 0,
@@ -108,7 +110,12 @@ export function AuthContextProvider({ children }) {
 
   useEffect(
     function () {
-      setIsFetching([user, data].includes(undefined));
+      setIsFetching(
+        
+          (user === initialContextValues.user ||
+            data === initialContextValues.data)
+        
+      );
     },
     [user, data]
   );

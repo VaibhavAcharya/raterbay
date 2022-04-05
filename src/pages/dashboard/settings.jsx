@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
 
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { firestore, storage } from "../../db";
-
-import { logout, useAuth } from "../../db/helpers/auth";
 import { doc, setDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+
+import { firestore, storage } from "../../db";
+import { logout, useAuth } from "../../db/helpers/auth";
+
 import ResumeViewer from "../../components/common/ResumeViewer";
 
 export default function Settings() {
