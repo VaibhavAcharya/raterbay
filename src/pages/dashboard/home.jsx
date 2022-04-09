@@ -26,7 +26,7 @@ const FETCH_USERS_MORE_COUNT = 2;
 
 function getStartOfToday() {
   const now = new Date();
-  now.setHours(5, 0, 0, 0); // +5 hours for Eastern Time
+  now.setHours(5); // +5 hours for Eastern Time
   const timestamp = Timestamp.fromDate(now);
   return timestamp; // ex. 1631246400
 }
@@ -39,91 +39,144 @@ export default function Home() {
   const [lastUserDocFetched, setLastUserDocFetched] = useState(null);
   const [hasMoreUserDocs, setHasMoreUserDocs] = useState(true);
 
-  useEffect(function () {
-    console.log("Users fetch started. [first]");
-    const latestQuery = query(
-      usersCollectionRef,
-      orderBy("resume.updatedAt", "desc"),
-      where("resume.updatedAt", ">", getStartOfToday()),
-      limit(FETCH_USERS_FIRST_COUNT)
-    );
+  const [showLatest, setShowLatest] = useState(false);
+  function setLatestQ() {
+    setShowLatest(true);
+  }
+  function setTopQ() {
+    setShowLatest(false);
+  }
 
-    const topQuery = query(
-      usersCollectionRef,
-      orderBy("resume.updatedAt", "desc"),
-      where("resume.updatedAt", ">", getStartOfToday()),
-      orderBy("resume.rating.total", "desc"),
-      limit(FETCH_USERS_FIRST_COUNT)
-    );
-
-    getDocs(topQuery)
-      .then((usersSnap) => {
-        console.log("Users fetched successfully. [first]", usersSnap.size);
-
-        setLastUserDocFetched(usersSnap.docs[usersSnap.size - 1]);
-        setUsers(
-          usersSnap.docs.map(function (userDoc) {
-            return {
-              id: userDoc.id,
-              ...userDoc.data(),
-            };
-          })
-        );
-      })
-      .catch(function (error) {
-        console.error("Users fetch failed! [first]", error);
-      });
-  }, []);
-
-  const loadMoreUsers = useCallback(function () {
-    console.log("Users fetch started. [more]");
-
-    getDocs(
-      query(
+  useEffect(
+    function () {
+      console.log("Users fetch started. [first]");
+      const latestQuery = query(
         usersCollectionRef,
         orderBy("resume.updatedAt", "desc"),
+        // where("resume.updatedAt", ">", getStartOfToday()),
+        limit(FETCH_USERS_FIRST_COUNT)
+      );
+
+      const topQuery = query(
+        usersCollectionRef,
+        orderBy("resume.updatedAt", "desc"),
+        // where("resume.updatedAt", ">", getStartOfToday()),
+        orderBy("resume.rating.total", "desc"),
+        limit(FETCH_USERS_FIRST_COUNT)
+      );
+
+      getDocs(showLatest ? latestQuery : topQuery)
+        .then((usersSnap) => {
+          console.log("Users fetched successfully. [first]", usersSnap.size);
+
+          setLastUserDocFetched(usersSnap.docs[usersSnap.size - 1]);
+          setUsers(
+            usersSnap.docs.map(function (userDoc) {
+              return {
+                id: userDoc.id,
+                ...userDoc.data(),
+              };
+            })
+          );
+        })
+        .catch(function (error) {
+          console.error("Users fetch failed! [first]", error);
+        });
+    },
+    [showLatest]
+  );
+
+  const loadMoreUsers = useCallback(
+    function () {
+      console.log("Users fetch started. [more]");
+
+      const latestQuery = query(
+        usersCollectionRef,
+        orderBy("resume.updatedAt", "desc"),
+        // where("resume.updatedAt", ">", getStartOfToday()),
         startAfter(lastUserDocFetched),
         limit(FETCH_USERS_MORE_COUNT)
-      )
-    )
-      .then(function (moreUsersSnap) {
-        console.log("Users fetched successfully. [more]");
+      );
 
-        const moreUsersSnapSize = moreUsersSnap.size;
+      const topQuery = query(
+        usersCollectionRef,
+        orderBy("resume.updatedAt", "desc"),
+        // where("resume.updatedAt", ">", getStartOfToday()),
+        orderBy("resume.rating.total", "desc"),
+        startAfter(lastUserDocFetched),
+        limit(FETCH_USERS_MORE_COUNT)
+      );
 
-        if (moreUsersSnapSize < 1) {
-          console.log("No more users to fetch.");
+      getDocs(showLatest ? latestQuery : topQuery)
+        .then(function (moreUsersSnap) {
+          console.log("Users fetched successfully. [more]");
 
-          setHasMoreUserDocs(false);
-        } else {
-          setLastUserDocFetched(moreUsersSnap.docs[moreUsersSnapSize]);
+          const moreUsersSnapSize = moreUsersSnap.size;
 
-          const newUsers = moreUsersSnap.docs.map(function (userDoc) {
-            return {
-              id: userDoc.id,
-              ...userDoc.data(),
-            };
-          });
+          if (moreUsersSnapSize < 1) {
+            console.log("No more users to fetch.");
 
-          setUsers(function (oldUsers) {
-            return [...oldUsers, ...newUsers];
-          });
-        }
-      })
-      .catch(function (error) {
-        console.error("Users fetch failed! [more]", error);
-      });
-  }, []);
+            setHasMoreUserDocs(false);
+          } else {
+            setLastUserDocFetched(moreUsersSnap.docs[moreUsersSnapSize]);
 
-  console.log(users);
+            const newUsers = moreUsersSnap.docs.map(function (userDoc) {
+              return {
+                id: userDoc.id,
+                ...userDoc.data(),
+              };
+            });
+
+            setUsers(function (oldUsers) {
+              return [...oldUsers, ...newUsers];
+            });
+          }
+        })
+        .catch(function (error) {
+          console.error("Users fetch failed! [more]", error);
+        });
+    },
+    [showLatest]
+  );
 
   return (
     <Fragment>
+      <div className="flex flex-row items-stretch justify-start gap-4">
+        <button
+          className={[
+            "rounded-2xl px-4 py-2 font-bold hover:bg-teal-100",
+            showLatest ? "" : "bg-teal-200",
+          ].join(" ")}
+          onClick={setTopQ}
+        >
+          Top
+        </button>
+        <button
+          className={[
+            "rounded-2xl px-4 py-2 font-bold hover:bg-teal-100",
+            showLatest ? "bg-teal-200" : "",
+          ].join(" ")}
+          onClick={setLatestQ}
+        >
+          Latest
+        </button>
+      </div>
       <InfiniteScroll
         dataLength={users.length}
         next={loadMoreUsers}
         hasMore={hasMoreUserDocs}
-        loader={<p>loadinggggggg.........</p>}
+        loader={
+          <div className="flex flex-col items-stretch justify-start gap-4">
+            {Array(FETCH_USERS_MORE_COUNT).map(function (_, i) {
+              return (
+                <div
+                  key={i}
+                  className="h-[60vh] animate-pulse bg-black/20 blur"
+                />
+              );
+            })}
+          </div>
+        }
         endMessage={
           <div className="border-b border-dashed border-black pt-8" />
         }
