@@ -70,11 +70,6 @@ export function AuthContextProvider({ children }) {
                   displayName: user.displayName,
                   photoURL: user.photoURL,
                 });
-                // TODO: Hai kya ye?
-                setDoc(collectionDocRef, {
-                  count: 0,
-                  totalRating: 0,
-                });
               }
             } else {
               setDoc(dataDocRef, {
@@ -84,10 +79,6 @@ export function AuthContextProvider({ children }) {
                   url: null,
                   updatedAt: null,
                 },
-              });
-              setDoc(collectionDocRef, {
-                count: 0,
-                totalRating: 0,
               });
             }
           },

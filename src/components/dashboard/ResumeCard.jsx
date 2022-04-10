@@ -8,13 +8,13 @@ import {
   getDocs,
   setDoc,
   updateDoc,
-  increment,
 } from "firebase/firestore";
 
 import { firestore } from "../../db";
 import { useAuth } from "../../db/helpers/auth";
 
 import ResumeViewer from "../common/ResumeViewer";
+import CommentCard from "./CommentCard";
 
 export default function ResumeCard({ user: resume }) {
   const { user } = useAuth();
@@ -31,7 +31,9 @@ export default function ResumeCard({ user: resume }) {
       `users/${resume.id}/ratings/${user.uid}`
     );
     getDoc(alreadyRatingRef).then((snapshot) => {
-      setAlreadyRating(snapshot.data().rating);
+      if (snapshot.exists()) {
+        setAlreadyRating(snapshot.data().rating);
+      }
     });
   }, [rating]);
 
@@ -51,27 +53,31 @@ export default function ResumeCard({ user: resume }) {
   }, [comments]);
 
   const addRating = (userRating) => {
-    const newRating = (rating * totalRating + userRating) / (totalRating + 1);
     const updateDocRef = doc(firestore, `users/${resume.id}`);
     const setDocRef = doc(firestore, `users/${resume.id}/ratings/${user.uid}`);
+    const checkDocRef = doc(firestore, `users/${resume.id}`);
 
-    getDoc(setDocRef).then((snapshot) => {
-      if (!snapshot.exists()) {
-        updateDoc(updateDocRef, {
-          resume: {
-            ...resume.resume,
-            rating: {
-              total: newRating,
-              times: increment(1),
-            },
+    getDoc(checkDocRef).then((snapshot) => {
+      const oldRatedTimes = snapshot.data().resume?.rating?.times || 0;
+      const oldRatedTotal = snapshot.data().resume?.rating?.total || 0;
+      const newRating =
+        (oldRatedTotal * oldRatedTimes + userRating) / (oldRatedTimes + 1);
+
+      updateDoc(updateDocRef, {
+        resume: {
+          ...resume.resume,
+          rating: {
+            total: newRating,
+            times: oldRatedTimes + 1,
           },
-        });
-        setRating(newRating);
+        },
+      });
+      setRating(Number(newRating));
+      setTotalRating(oldRatedTimes + 1);
 
-        setDoc(setDocRef, {
-          rating: userRating,
-        });
-      }
+      setDoc(setDocRef, {
+        rating: userRating,
+      });
     });
   };
 
@@ -130,28 +136,16 @@ export default function ResumeCard({ user: resume }) {
       <div className="flex flex-col items-stretch justify-start gap-4">
         <p className="text-lg font-bold">Comments</p>
         <div className="flex flex-col items-stretch justify-start gap-2">
-          {comments &&
-            comments.map((comment) => (
-              <div className="flex flex-row items-start justify-start gap-4">
-                <img
-                  src={resume.photoURL}
-                  alt={`profile picture ${resume.displayName}`}
-                  width={32}
-                  height={32}
-                  className="rounded-lg hover:animate-spin"
-                />
-                <div>
-                  <p className="font-bold">{resume.displayName}</p>
-                  <p>{comment.comment}</p>
-                </div>
-              </div>
-            ))}
+          {comments?.map((comment) => (
+            <CommentCard comment={comment} />
+          ))}
         </div>
         <div className="flex flex-row items-stretch justify-between gap-4">
           <input
             ref={commentRef}
             type="text"
             className="w-full rounded-2xl bg-teal-50 px-4 py-2 backdrop-blur"
+            maxLength={200}
           />
           <button
             onClick={addComment}

@@ -59,9 +59,9 @@ export default function Home() {
 
       const topQuery = query(
         usersCollectionRef,
-        orderBy("resume.updatedAt", "desc"),
         // where("resume.updatedAt", ">", getStartOfToday()),
         orderBy("resume.rating.total", "desc"),
+        orderBy("resume.updatedAt", "desc"),
         limit(FETCH_USERS_FIRST_COUNT)
       );
 
@@ -100,11 +100,11 @@ export default function Home() {
 
       const topQuery = query(
         usersCollectionRef,
-        orderBy("resume.updatedAt", "desc"),
         // where("resume.updatedAt", ">", getStartOfToday()),
         orderBy("resume.rating.total", "desc"),
+        orderBy("resume.updatedAt", "desc"),
         startAfter(lastUserDocFetched),
-        limit(FETCH_USERS_MORE_COUNT)
+        limit(FETCH_USERS_FIRST_COUNT)
       );
 
       getDocs(showLatest ? latestQuery : topQuery)
@@ -192,7 +192,7 @@ export default function Home() {
         </main>
       </InfiniteScroll>
 
-      {data.resume.url ? null : (
+      {data.resume?.url ? null : (
         <div className="fixed left-0 bottom-8 flex w-full flex-row items-center justify-center">
           <Link
             to="settings"
