@@ -26,15 +26,18 @@ export default function ResumeCard({ user: resume }) {
 
   // fetch rating and check if current user already rated this resume
   useEffect(() => {
-    const alreadyRatingRef = doc(
-      firestore,
-      `users/${resume.id}/ratings/${user.uid}`
-    );
-    getDoc(alreadyRatingRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        setAlreadyRating(snapshot.data().rating);
-      }
-    });
+    if (resume.resume?.url) {
+      const collectionPath = resume.resume.url.split("/").join(".");
+      const alreadyRatingRef = doc(
+        firestore,
+        `users/${resume.id}/ratings/${collectionPath}/ratings/${user.uid}`
+      );
+      getDoc(alreadyRatingRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          setAlreadyRating(snapshot.data().rating);
+        }
+      });
+    }
   }, [rating]);
 
   // fetching comments
@@ -54,7 +57,11 @@ export default function ResumeCard({ user: resume }) {
 
   const addRating = (userRating) => {
     const updateDocRef = doc(firestore, `users/${resume.id}`);
-    const setDocRef = doc(firestore, `users/${resume.id}/ratings/${user.uid}`);
+    const collectionPath = resume.resume.url.split("/").join(".");
+    const setDocRef = doc(
+      firestore,
+      `users/${resume.id}/ratings/${collectionPath}/ratings/${user.uid}`
+    );
     const checkDocRef = doc(firestore, `users/${resume.id}`);
 
     getDoc(checkDocRef).then((snapshot) => {

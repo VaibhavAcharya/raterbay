@@ -46,10 +46,6 @@ export function AuthContextProvider({ children }) {
         console.log("Data observer attached.");
 
         const dataDocRef = doc(firestore, "users", user.uid);
-        const collectionDocRef = doc(
-          firestore,
-          `users/${user.uid}/ratings/count`
-        );
 
         unsubscribe = onSnapshot(
           dataDocRef,
