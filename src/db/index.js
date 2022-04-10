@@ -4,12 +4,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 const firebaseConfig = {
-  apiKey: "AIzaSyDSR0GqhvY8aIyTx7RIfIC7uhtdFyrrhS0",
-  authDomain: "fir-5f5f8.firebaseapp.com",
-  projectId: "fir-5f5f8",
-  storageBucket: "fir-5f5f8.appspot.com",
-  messagingSenderId: "889310087644",
-  appId: "1:889310087644:web:2ab781c2d5c864ba73e719",
+  apiKey: "AIzaSyAGbaPcK5mnW1kPNwkTdda_Hitbd9VQfNU",
+  authDomain: "new-raterbay.firebaseapp.com",
+  projectId: "new-raterbay",
+  storageBucket: "new-raterbay.appspot.com",
+  messagingSenderId: "7644984851",
+  appId: "1:7644984851:web:b8d9cfae1464dfd48271e6",
 };
 
 export const firebase = initializeApp(firebaseConfig);
