@@ -20,6 +20,7 @@ export default function Landing() {
           A platform for receiving and providing{" "}
           <u className="decoration-teal-400 decoration-wavy">resume reviews</u>.
         </h2>
+
         <button
           onClick={
             user
